@@ -140,8 +140,7 @@ recordOptics :: SumType 'PureScript -> Text
 recordOptics st@(SumType _ [_]) = T.unlines $ recordEntryToLens st <$> dcRecords
   where
     cs = st ^. sumTypeConstructors
-    dcRecords = lensableConstructor ^.. traversed.sigValues._Right.traverse.filtered hasUnderscore
-    hasUnderscore e = e ^. recLabel.to (T.isPrefixOf "_")
+    dcRecords = lensableConstructor ^.. traversed.sigValues._Right.traverse
     lensableConstructor = filter singleRecordCons cs ^? _head
     singleRecordCons (DataConstructor _ (Right _)) = True
     singleRecordCons _                             = False
@@ -228,16 +227,13 @@ constructorToOptic otherConstructors typeInfo (DataConstructor n args) =
 
 recordEntryToLens :: SumType 'PureScript -> RecordEntry 'PureScript -> Text
 recordEntryToLens st e =
-  if hasUnderscore
-  then lensName <> forAll <>  "Lens' " <> typName <> " " <> recType <> "\n"
-      <> lensName <> " = _Newtype <<< prop (SProxy :: SProxy \"" <> recName <> "\")\n"
-  else ""
+  lensName <> forAll <>  "Lens' " <> typName <> " " <> recType <> "\n"
+  <> lensName <> " = _Newtype <<< prop (SProxy :: SProxy \"" <> recName <> "\")\n"
   where
     (typName, forAll) = typeNameAndForall (st ^. sumTypeInfo)
     recName = e ^. recLabel
     lensName = T.drop 1 recName
     recType = typeInfoToText False (e ^. recValue)
-    hasUnderscore = e ^. recLabel.to (T.isPrefixOf "_")
 
 recordEntryToText :: RecordEntry 'PureScript -> Text
 recordEntryToText e = _recLabel e <> " :: " <> typeInfoToText True (e ^. recValue)
