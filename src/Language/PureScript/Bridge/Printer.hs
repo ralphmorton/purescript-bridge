@@ -227,12 +227,11 @@ constructorToOptic otherConstructors typeInfo (DataConstructor n args) =
 
 recordEntryToLens :: SumType 'PureScript -> RecordEntry 'PureScript -> Text
 recordEntryToLens st e =
-  lensName <> forAll <>  "Lens' " <> typName <> " " <> recType <> "\n"
-  <> lensName <> " = _Newtype <<< prop (SProxy :: SProxy \"" <> recName <> "\")\n"
+  recName <> forAll <>  "Lens' " <> typName <> " " <> recType <> "\n"
+  <> recName <> " = _Newtype <<< prop (SProxy :: SProxy \"" <> recName <> "\")\n"
   where
     (typName, forAll) = typeNameAndForall (st ^. sumTypeInfo)
     recName = e ^. recLabel
-    lensName = T.drop 1 recName
     recType = typeInfoToText False (e ^. recValue)
 
 recordEntryToText :: RecordEntry 'PureScript -> Text
